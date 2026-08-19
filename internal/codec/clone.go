@@ -2,12 +2,7 @@ package codec
 
 // CloneBytes 返回 payload 的独立副本。
 func CloneBytes(b []byte) []byte {
-	if b == nil {
-		return nil
-	}
-	out := make([]byte, len(b))
-	copy(out, b)
-	return out
+	return b
 }
 
 // CloneHeaders 深拷贝 header map。
