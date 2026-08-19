@@ -154,6 +154,9 @@ type deliverAdapter struct {
 }
 
 func (a *deliverAdapter) Deliver(ctx context.Context, topic string, payload []byte, headers map[string]string, url string) (int, error) {
+	if a == nil || a.d == nil {
+		return 0, ErrNilTransport
+	}
 	return a.d.Post(ctx, topic, payload, headers, url)
 }
 
