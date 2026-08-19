@@ -18,14 +18,6 @@ func (o *Outbox) RelayOnce(ctx context.Context) (RelayResult, error) {
 		ctx = context.Background()
 	}
 	o.mu.Lock()
-	if err := o.checkOpenLocked(); err != nil {
-		o.mu.Unlock()
-		return RelayResult{}, err
-	}
-	if o.st == nil {
-		o.mu.Unlock()
-		return RelayResult{}, ErrClosed
-	}
 	st := o.st
 	deliv := o.effectiveDelivererLocked()
 	pol := o.policy

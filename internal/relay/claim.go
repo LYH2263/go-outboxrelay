@@ -8,9 +8,6 @@ import (
 
 // ClaimNext 取下一条到期 pending 并标为 sending。
 func ClaimNext(st store.Store, now time.Time) (store.Record, bool, error) {
-	if st == nil {
-		return store.Record{}, false, store.ErrClosed
-	}
 	var due []store.Record
 	if m, ok := st.(*store.Memory); ok {
 		var err error
