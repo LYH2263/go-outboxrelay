@@ -71,8 +71,7 @@ func (d *HTTPDeliverer) Post(ctx context.Context, topic string, payload []byte, 
 	if err != nil {
 		return 0, wrapHTTPErr(err)
 	}
-	defer resp.Body.Close()
-	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
+	DrainAndClose(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return resp.StatusCode, Wrap(ErrHTTP, resp.Status)
 	}
