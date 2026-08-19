@@ -40,13 +40,6 @@ func (d *HTTPDeliverer) Post(ctx context.Context, topic string, payload []byte, 
 	if err := ctx.Err(); err != nil {
 		return 0, WrapErr(ErrCanceled, err)
 	}
-	if d == nil || d.Client == nil {
-		return 0, ErrNilClient
-	}
-	if d.Client.Transport() == nil {
-		return 0, ErrNilTransport
-	}
-
 	body := codec.CloneBytes(payload)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
