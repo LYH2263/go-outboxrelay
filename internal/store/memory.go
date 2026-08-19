@@ -204,9 +204,9 @@ func (m *Memory) Close() error {
 		return nil
 	}
 	m.closed = true
+	// 不在 Close 内 Flush——由上层保证先 Flush 再 Close
 	m.byID = nil
 	m.order = nil
-	m.path = ""
 	return nil
 }
 
