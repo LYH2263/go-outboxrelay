@@ -86,13 +86,15 @@ func (o *Outbox) RelayContext(ctx context.Context, max int) ([]RelayResult, erro
 			return out, nil
 		}
 		out = append(out, res)
-		// 失败后退避（尊重 ctx）
+		// 失败后退避（尊重 ctx）；ctx 取消时 Wait 立即返回并向上传递。
 		if !res.OK && res.Attempts > 0 {
 			o.mu.Lock()
 			pol := o.policy
 			o.mu.Unlock()
 			d := backoff.Delay(pol, res.Attempts)
-			_ = backoff.Wait(ctx, d)
+			if werr := backoff.Wait(ctx, d); werr != nil {
+				return out, mapCtxErr(werr)
+			}
 		}
 	}
 }
