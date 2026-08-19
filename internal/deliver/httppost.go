@@ -33,7 +33,15 @@ func (d *HTTPDeliverer) now() time.Time {
 }
 
 // Post 发送一次 HTTP POST。响应 Body 用 defer Close；错误用 %w 包裹。
+// 投递前先做 nil 防护：未注入 Client 或 Transport 时返回明确哨兵错误，
+// 而非在首次取 UA / Do 时 nil deref panic。
 func (d *HTTPDeliverer) Post(ctx context.Context, topic string, payload []byte, headers map[string]string, url string) (int, error) {
+	if d == nil || d.Client == nil {
+		return 0, Wrap(ErrNilClient, "nil deliverer or client")
+	}
+	if d.Client.Transport() == nil {
+		return 0, Wrap(ErrNilTransport, "nil http transport")
+	}
 	if ctx == nil {
 		ctx = context.Background()
 	}
