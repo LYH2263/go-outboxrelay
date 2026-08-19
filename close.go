@@ -15,10 +15,12 @@ func (o *Outbox) Close() error {
 
 	var first error
 	if o.st != nil {
-		if err := o.st.Close(); err != nil && first == nil {
+		// 先 Flush 持久化，再 Close 释放：若先 Close，Memory.Close 会置 closed=true
+		// 并清空 byID/path，随后的 Flush 仅返回 ErrClosed 而不落盘，关机前最后一批写入会丢失。
+		if err := o.st.Flush(); err != nil && first == nil {
 			first = err
 		}
-		if err := o.st.Flush(); err != nil && first == nil {
+		if err := o.st.Close(); err != nil && first == nil {
 			first = err
 		}
 	}
