@@ -28,7 +28,7 @@ func (o *Outbox) Append(topic string, payload []byte, headers map[string]string)
 	}
 	rec := store.Record{
 		Topic:      topic,
-		Payload:    payload,
+		Payload:    codec.CloneBytes(payload),
 		Headers:    codec.CloneHeaders(headers),
 		Status:     string(status.Pending),
 		MaxAttempt: o.maxAttempts,
