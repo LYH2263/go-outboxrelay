@@ -32,6 +32,10 @@ func (o *Outbox) RelayOnce(ctx context.Context) (RelayResult, error) {
 	clk := o.clk
 	o.mu.Unlock()
 
+	if err := ctx.Err(); err != nil {
+		return RelayResult{}, mapCtxErr(err)
+	}
+
 	rec, ok, err := relay.ClaimNext(st, clk.Now())
 	if err != nil {
 		return RelayResult{}, err
@@ -60,6 +64,12 @@ func (o *Outbox) RelayContext(ctx context.Context, max int) ([]RelayResult, erro
 	}
 	var out []RelayResult
 	for {
+		if err := ctx.Err(); err != nil {
+			if len(out) == 0 {
+				return out, mapCtxErr(err)
+			}
+			return out, mapCtxErr(err)
+		}
 		if max > 0 && len(out) >= max {
 			return out, nil
 		}

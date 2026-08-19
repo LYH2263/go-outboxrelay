@@ -14,6 +14,11 @@ func BatchClaim(ctx context.Context, st store.Store, now time.Time, n int) ([]st
 	}
 	var out []store.Record
 	for i := 0; i < n; i++ {
+		if ctx != nil {
+			if err := ctx.Err(); err != nil {
+				return out, err
+			}
+		}
 		rec, ok, err := ClaimNext(st, now)
 		if err != nil {
 			return out, err
