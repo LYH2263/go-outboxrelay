@@ -7,7 +7,8 @@ import (
 	"github.com/LYH2263/go-outboxrelay/internal/store"
 )
 
-// MarkDone 持久化成功后把事件标为 done。若 Update 失败则不留下错误内存态。
+// MarkDone 持久化成功后把事件标为 done。Update 在持久化失败时回滚内存视图，
+// 故不会留下 done 的脏内存态——调用方据返回的 error 决定是否重投。
 func MarkDone(st store.Store, id string) error {
 	rec, err := st.Get(id)
 	if err != nil {
@@ -18,10 +19,6 @@ func MarkDone(st store.Store, id string) error {
 	}
 	rec.Status = Done
 	rec.LastError = ""
-	// 先改内存视图再 Update；Update 失败时内存可能已脏
-	if m, ok := st.(*store.Memory); ok {
-		_ = m
-	}
 	return st.Update(rec)
 }
 

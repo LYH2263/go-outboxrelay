@@ -128,6 +128,9 @@ func (m *Memory) Update(rec Record) error {
 	if !ok {
 		return ErrNotFound
 	}
+	// 保存旧值：持久化失败时回滚内存视图，避免内存态（done）与磁盘（sending）不一致，
+	// 否则重启后从磁盘恢复会再次 claim 投递，而内存却以为已 done。
+	backup := *cur
 	cp := CloneRecord(rec)
 	cp.CreatedAt = cur.CreatedAt
 	cp.UpdatedAt = m.clk.Now()
@@ -135,6 +138,7 @@ func (m *Memory) Update(rec Record) error {
 	m.dirty = true
 	if m.path != "" {
 		if err := m.persistLocked(); err != nil {
+			*cur = backup
 			return err
 		}
 	}
