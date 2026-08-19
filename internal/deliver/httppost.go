@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -84,5 +83,11 @@ func wrapHTTPErr(err error) error {
 	if err == nil {
 		return nil
 	}
-	return fmt.Errorf("http: %v", err)
+	if errors.Is(err, context.Canceled) {
+		return WrapErr(ErrCanceled, err)
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return WrapErr(ErrTimeout, err)
+	}
+	return WrapErr(ErrHTTP, err)
 }
