@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>事务发件箱</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>事务发件箱 Outbox Relay</h1>
+    <p class="sub">Append → Relay → done/dead</p>
+  </header>
+  <main>
+    <section>
+      <h2>追加事件</h2>
+      <label>Topic <input id="topic" value="order.created" /></label>
+      <label>URL <input id="url" value="http://127.0.0.1:9999/hook" /></label>
+      <label>Payload <textarea id="payload">{"id":1}</textarea></label>
+      <button id="btn-append">Append</button>
+    </section>
+    <section>
+      <h2>中继</h2>
+      <button id="btn-relay">RelayOnce×N</button>
+      <input id="max" type="number" value="5" min="1" />
+    </section>
+    <section>
+      <h2>Pending</h2>
+      <pre id="list"></pre>
+    </section>
+    <section>
+      <h2>Stats</h2>
+      <pre id="stats"></pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
