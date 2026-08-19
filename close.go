@@ -15,10 +15,10 @@ func (o *Outbox) Close() error {
 
 	var first error
 	if o.st != nil {
-		if err := o.st.Flush(); err != nil && first == nil {
+		if err := o.st.Close(); err != nil && first == nil {
 			first = err
 		}
-		if err := o.st.Close(); err != nil && first == nil {
+		if err := o.st.Flush(); err != nil && first == nil {
 			first = err
 		}
 	}
