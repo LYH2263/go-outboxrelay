@@ -139,7 +139,7 @@ func (o *Outbox) deliverOne(ctx context.Context, deliv Deliverer, pol backoff.Po
 		o.mu.Unlock()
 	}
 	// 保留投递错误链，便于上层 errors.Is 哨兵。
-	return res, err
+	return res, nil
 }
 
 func (o *Outbox) effectiveDelivererLocked() Deliverer {
