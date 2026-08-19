@@ -60,8 +60,8 @@ func recordToEvent(r store.Record) Event {
 	return Event{
 		ID:          r.ID,
 		Topic:       r.Topic,
-		Payload:     r.Payload,
-		Headers:     r.Headers,
+		Payload:     codec.CloneBytes(r.Payload),
+		Headers:     codec.CloneHeaders(r.Headers),
 		Status:      Status(r.Status),
 		Attempts:    r.Attempts,
 		MaxAttempt:  r.MaxAttempt,
