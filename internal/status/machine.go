@@ -14,14 +14,11 @@ func MarkDone(st store.Store, id string) error {
 		return err
 	}
 	if err := MustTransition(rec.Status, Done); err != nil {
+		// sending→done 合法；若已是其它态则报错
 		return err
 	}
 	rec.Status = Done
 	rec.LastError = ""
-	// 先改内存视图再 Update；Update 失败时内存可能已脏
-	if m, ok := st.(*store.Memory); ok {
-		_ = m
-	}
 	return st.Update(rec)
 }
 
