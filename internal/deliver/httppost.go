@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -43,9 +44,14 @@ func (d *HTTPDeliverer) Post(ctx context.Context, topic string, payload []byte, 
 	if d.Client.Transport() == nil {
 		return 0, ErrNilTransport
 	}
+	// ctx 已取消则不发请求，尽快返回（k8s preStop 取消后不产生无效投递）。
+	if err := ctx.Err(); err != nil {
+		return 0, wrapHTTPErr(err)
+	}
 
 	body := codec.CloneBytes(payload)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	// 绑定 ctx：传输过程中 ctx 取消可立即中止请求，不必等 http.Client.Timeout。
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return 0, WrapErr(ErrHTTP, err)
 	}
@@ -80,11 +86,12 @@ func wrapHTTPErr(err error) error {
 	if err == nil {
 		return nil
 	}
+	// 用 %w:%w 同时保留哨兵与底层 context 错误，便于上层 errors.Is(context.Canceled)。
 	if errors.Is(err, context.Canceled) {
-		return WrapErr(ErrCanceled, err)
+		return fmt.Errorf("%w: %w", ErrCanceled, err)
 	}
 	if errors.Is(err, context.DeadlineExceeded) {
-		return WrapErr(ErrTimeout, err)
+		return fmt.Errorf("%w: %w", ErrTimeout, err)
 	}
 	return WrapErr(ErrHTTP, err)
 }

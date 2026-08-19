@@ -17,6 +17,10 @@ func (o *Outbox) RelayOnce(ctx context.Context) (RelayResult, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	// ctx 已取消则立即返回，不进行 Claim/投递（k8s preStop 取消后尽快退出）。
+	if err := ctx.Err(); err != nil {
+		return RelayResult{}, mapCtxErr(err)
+	}
 	o.mu.Lock()
 	if err := o.checkOpenLocked(); err != nil {
 		o.mu.Unlock()
