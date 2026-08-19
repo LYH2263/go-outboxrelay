@@ -92,9 +92,7 @@ func (o *Outbox) RelayContext(ctx context.Context, max int) ([]RelayResult, erro
 			pol := o.policy
 			o.mu.Unlock()
 			d := backoff.Delay(pol, res.Attempts)
-			if err := backoff.Wait(ctx, d); err != nil {
-				return out, mapCtxErr(err)
-			}
+			_ = backoff.Wait(ctx, d)
 		}
 	}
 }
