@@ -18,6 +18,11 @@ func (o *Outbox) RelayOnce(ctx context.Context) (RelayResult, error) {
 		ctx = context.Background()
 	}
 	o.mu.Lock()
+	// Close 已释放 store/client 为 nil，此处须先哨兵，否则 ClaimNext 解引用 nil store 而 panic。
+	if err := o.checkOpenLocked(); err != nil {
+		o.mu.Unlock()
+		return RelayResult{}, err
+	}
 	st := o.st
 	deliv := o.effectiveDelivererLocked()
 	pol := o.policy
